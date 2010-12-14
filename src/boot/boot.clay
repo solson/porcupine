@@ -1,0 +1,6 @@
+import display;
+
+external kmain(multiboot:RawPointer, magic:UInt32) {
+	display.clear();
+	display.printString("Hello, world!", 0, 0);
+}

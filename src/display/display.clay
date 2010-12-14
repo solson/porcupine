@@ -1,0 +1,19 @@
+var videoMemory = Pointer[UInt16](0xb8000);
+var consoleWidth = 80;
+var consoleHeight = 25;
+var defaultColor = bitwiseOr(bitwiseAnd(7, 0xf), shiftLeft(0, 4));
+
+clear() {
+	for(i in range(0, consoleWidth * consoleHeight))
+		videoMemory[i] = UInt16(bitwiseOr(UInt8(' '), shiftLeft(defaultColor, 8)));
+}
+
+printChar(chr:Char, x, y) {
+    var i = y * consoleWidth + x;
+	videoMemory[i] = UInt16(bitwiseOr(UInt8(chr), shiftLeft(defaultColor, 8)));
+}
+
+printString(string, x, y) {
+	for(i, c in enumerated(string))
+		printChar(c, i + x, 0 + y);
+}

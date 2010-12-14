@@ -1,0 +1,7 @@
+default 0
+timeout 0
+color light-blue/black light-cyan/blue
+
+title Porcupine OS
+kernel /system/porcupine.exe
+
