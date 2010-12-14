@@ -9,7 +9,7 @@ clear() {
 }
 
 printChar(chr:Char, x, y) {
-    var i = y * consoleWidth + x;
+	var i = y * consoleWidth + x;
 	videoMemory[i] = UInt16(bitwiseOr(UInt8(chr), shiftLeft(defaultColor, 8)));
 }
 
