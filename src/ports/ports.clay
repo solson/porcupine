@@ -1,0 +1,41 @@
+//
+// outByte, inByte
+//
+
+external ("outByte") _outByte(port:UInt16, val:UInt8);
+external ("inByte") _inByte(port:UInt16) UInt8;
+
+outByte(port, val) {
+    _outByte(UInt16(port), UInt8(val));
+}
+
+inByte(port) = _inByte(UInt16(port));
+
+
+//
+// outWord, inWord
+//
+
+external ("outWord") _outWord(port:UInt16, val:UInt16);
+external ("inWord") _inWord(port:UInt16) UInt16;
+
+outWord(port, val) {
+    _outWord(UInt16(port), UInt16(val));
+}
+
+inWord(port) = _inWord(UInt16(port));
+
+
+//
+// outLong, inLong
+//
+
+external ("outLong") _outLong(port:UInt16, val:UInt32);
+external ("inLong") _inLong(port:UInt16) UInt32;
+
+outLong(port, val) {
+    _outLong(UInt16(port), UInt32(val));
+}
+
+inLong(port) = _inLong(UInt16(port));
+
