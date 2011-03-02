@@ -1,0 +1,54 @@
+// Serial Ports
+//   Refer to http://wiki.osdev.org/Serial_ports
+
+import ports.*;
+
+// For the most part, COM1 and COM2 will be at these addresses. The addresses
+// of COM3 and COM4 are less reliable and may vary due to physical setup and
+// BIOS configuration.
+alias COM1 = 0x3F8;
+alias COM2 = 0x2F8;
+alias COM3 = 0x3E8;
+alias COM4 = 0x2E8;
+
+initialize(port) {
+    outByte(port + 1, 0x00); // Disable all interrupts
+    outByte(port + 3, 0x80); // Enable DLAB (to set baud rate divisor)
+    outByte(port + 0, 0x03); // Set divisor to 3 (lo byte) 38400 baud
+    outByte(port + 1, 0x00); //                  (hi byte)
+    outByte(port + 3, 0x03); // 8 bits, no parity, one stop bit
+    outByte(port + 2, 0xC7); // Enable FIFO, clear them, with 14-byte threshold
+    outByte(port + 4, 0x0B); // IRQs enabled, RTS/DSR set
+}
+
+received?(port) = Bool(bitwiseAnd(inByte(port + 5), 1));
+
+canSend?(port) = Bool(bitwiseAnd(inByte(port + 5), 0x20));
+
+readChar(port) {
+    while(not received?(port)) {} // Wait for input.
+    return Char(inByte(port));
+}
+
+printChar(port, char) {
+    while(not canSend?(port)) {} // Wait until it can send.
+    outByte(port, Byte(char));
+}
+
+printString(port, string) {
+    for(char in string)
+        printChar(port, char);
+}
+
+
+//
+// Convenience overloads for COM1
+//
+
+overload initialize() { initialize(COM1); }
+overload received?() = received?(COM1);
+overload canSend?() = canSend?(COM1);
+overload readChar() = readChar(COM1);
+overload printChar(char) { printChar(COM1, char); }
+overload printString(string) { printString(COM1, string); }
+
