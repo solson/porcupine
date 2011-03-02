@@ -1,13 +1,13 @@
 import ports;
 
-alias PORT_E9 = UInt16(0xE9);
+alias PORT_E9 = 0xE9;
 
 printChar(chr) {
-	ports.outByte(PORT_E9, UInt8(chr));
+	ports.outByte(PORT_E9, chr);
 }
 
 printString(str) {
 	for(chr in str)
-		printChar(UInt8(chr));
+		printChar(chr);
 }
 
