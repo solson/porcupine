@@ -5,6 +5,7 @@
 *.lib
 *.shlib
 *.iso
+src/porcupine.s
 
 #ignore editor temporary and backup files
 .*.swp
