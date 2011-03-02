@@ -1,6 +1,10 @@
 import display;
+import multiboot.*;
 
-external kmain(multiboot:RawPointer, magic:UInt32) {
+external kmain(multiboot:Pointer[MultibootInfo], magic:UInt32) {
 	display.clear();
-	display.printString("Hello, world!", 0, 0);
+	display.println("Hello, ", "world", '!');
+	display.currentColor = display.color(display.WHITE, display.RED);
+	display.println("Blah blah blah.");
+	display.currentColor = display.DEFAULT_COLOR;
 }

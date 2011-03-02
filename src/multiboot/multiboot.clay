@@ -1,0 +1,79 @@
+// The magic number passed by a Multiboot-compliant boot loader
+alias MULTIBOOT_BOOTLOADER_MAGIC = 0x2BADB002;
+
+// Multiboot Flags
+alias MULTIBOOT_FLAG_MEM     = 1;
+alias MULTIBOOT_FLAG_DEVICE  = shiftLeft(1, 1);
+alias MULTIBOOT_FLAG_CMDLINE = shiftLeft(1, 2);
+alias MULTIBOOT_FLAG_MODS    = shiftLeft(1, 3);
+alias MULTIBOOT_FLAG_AOUT    = shiftLeft(1, 4);
+alias MULTIBOOT_FLAG_ELF     = shiftLeft(1, 5);
+alias MULTIBOOT_FLAG_MMAP    = shiftLeft(1, 6);
+alias MULTIBOOT_FLAG_CONFIG  = shiftLeft(1, 7);
+alias MULTIBOOT_FLAG_LOADER  = shiftLeft(1, 8);
+alias MULTIBOOT_FLAG_APM     = shiftLeft(1, 9);
+alias MULTIBOOT_FLAG_VBE     = shiftLeft(1, 10);
+
+// Global variable for multiboot info so it can be accessed everywhere.
+var multiboot = null(MultibootInfo);
+
+// Structure containing information received from GRUB (or any
+// other Multiboot-compliant bootloader).
+record MultibootInfo (
+    flags: UInt32, // Determines which fields below are present.
+
+    memLower: UInt32, // Amount of lower memory in the computer (in kB).
+    memUpper: UInt32, // Amount of higher memory in the computer (in kB).
+
+    bootDevice: UInt32, // The boot device which is used to boot the kernel.
+
+    cmdline: UInt32, // The command line passed to the OS by GRUB. Example: /System/oos.exe
+
+    modsCount: UInt32, // Amount of modules loaded (e.g. ramdisks).
+    modsAddr: UInt32,  // Address of the modules.
+
+    // ELF stuff.
+    elfNumber: UInt32,
+    elfSize: UInt32,
+    elfAddress: UInt32,
+    elfShndx: UInt32,
+
+    mmapLength: UInt32, // Memory map length.
+    mmapAddr: UInt32,   // Memory map starting address.
+
+    // Example: root (fd0)
+    drivesLength: UInt32, // Amount of drives available.
+    drivesAddr: UInt32,   // Starting address of the drives.
+
+    configTable: UInt32,
+
+    bootLoaderName: UInt32, // Name of the bootloader. Example: GNU GRUB 0.97
+
+    apmTable: UInt32, // APM (Advanced Power Management) table.
+
+    vbeControlInfo: UInt32,
+    vbeModeInfo: UInt32,
+    vbeMode: UInt32,
+    vbeInterfaceSegment: UInt32,
+    vbeInterfaceOffset: UInt32,
+    vbeInterfaceLength: UInt32,
+);
+
+// The module structure.
+record MultibootModule (
+    moduleStart: UInt32,
+    moduleEnd: UInt32,
+    string: UInt32,
+    reserved: UInt32,
+);
+
+// Memory map entry.
+record MMapEntry (
+    size: UInt32,         // Size of the structure (not counting this variable).
+    baseAddrLow: UInt32,  // Memory region starting address.
+    baseAddrHigh: UInt32, // Upper 32-bits of the previous value (for 64-bits systems).
+    lengthLow: UInt32,    // Memory region length.
+    lengthHigh: UInt32,   // Upper 32-bits of the previous value (for 64-bits systems).
+    type: UInt32,         // Type (1 = available RAM, 0 = reserved).
+);
+

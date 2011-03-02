@@ -1,19 +1,120 @@
-var videoMemory = Pointer[UInt16](0xb8000);
-var consoleWidth = 80;
-var consoleHeight = 25;
-var defaultColor = bitwiseOr(bitwiseAnd(7, 0xf), shiftLeft(0, 4));
+import ports;
+
+// returns `x` aligned to the next boundary of `alignment`.
+inline align(x, alignment) = bitwiseAnd(x, bitwiseNot(alignment - 1)) + alignment;
+
+enum Color {
+	BLACK, BLUE, GREEN, CYAN, RED, MAGENTA, BROWN, LIGHT_GREY, DARK_GREY,
+	LIGHT_BLUE, LIGHT_GREEN, LIGHT_CYAN, LIGHT_RED,	LIGHT_MAGENTA, YELLOW,
+	WHITE
+}
+
+alias DEFAULT_COLOR = color(LIGHT_GREY, BLACK);
+var currentColor = DEFAULT_COLOR;
+
+alias CONSOLE_WIDTH = 80;
+alias CONSOLE_HEIGHT = 25;
+alias CONSOLE_SIZE = CONSOLE_WIDTH * CONSOLE_HEIGHT;
+
+var VIDEO_MEMORY = Pointer[UInt16](0xb8000);
+
+var cursorX = 0;
+var cursorY = 0;
+
+// I/O ports related to the console display
+alias INDEX_PORT = UInt16(0x3d4);
+alias DATA_PORT  = UInt16(0x3d5);
+
+alias CURSOR_LOW_PORT  = UInt8(0xE);
+alias CURSOR_HIGH_PORT = UInt8(0xF);
+
+
+inline cell(ptr, row, col) = ref ptr[row * CONSOLE_WIDTH + col];
+
+color(fg:Color, bg:Color) = bitwiseOr(bitwiseAnd(Int(fg), 0xf), shiftLeft(Int(bg), 4));
 
 clear() {
-	for(i in range(0, consoleWidth * consoleHeight))
-		videoMemory[i] = UInt16(bitwiseOr(UInt8(' '), shiftLeft(defaultColor, 8)));
+	for(i in range(0, CONSOLE_SIZE))
+		VIDEO_MEMORY[i] = UInt16(bitwiseOr(UInt8(' '), shiftLeft(currentColor, 8)));
 }
 
-printChar(chr:Char, x, y) {
-	var i = y * consoleWidth + x;
-	videoMemory[i] = UInt16(bitwiseOr(UInt8(chr), shiftLeft(defaultColor, 8)));
+scroll() {
+	for(row in range(1, CONSOLE_HEIGHT))
+		for(col in range(0, CONSOLE_WIDTH))
+			cell(VIDEO_MEMORY, row - 1, col) = cell(VIDEO_MEMORY, row, col);
+
+	for(col in range(0, CONSOLE_WIDTH))
+		putChar(' ', col, CONSOLE_HEIGHT - 1);
 }
 
-printString(string, x, y) {
-	for(i, c in enumerated(string))
-		printChar(c, i + x, 0 + y);
+moveCursor(x, y) {
+	var position = UInt16(y * CONSOLE_WIDTH + x);
+
+	ports.outByte(INDEX_PORT, CURSOR_LOW_PORT);
+	ports.outByte(DATA_PORT, UInt8(shiftRight(position, 8)));
+
+	ports.outByte(INDEX_PORT, CURSOR_HIGH_PORT);
+	ports.outByte(DATA_PORT, UInt8(bitwiseAnd(position, 0xFF)));
+}
+
+updateCursor() {
+	moveCursor(cursorX, cursorY);
+}
+
+putChar(chr:Char, x, y) {
+	var i = y * CONSOLE_WIDTH + x;
+	VIDEO_MEMORY[i] = UInt16(bitwiseOr(UInt8(chr), shiftLeft(currentColor, 8)));
+}
+
+procedure print;
+procedure println;
+
+overload print(a, ...b) {
+    print(a);
+    print(...b);
+}
+
+overload print() {}
+
+overload println(...a) {
+    print(...a, '\n');
+}
+
+overload print(chr:Char) {
+	if(chr == '\b') {
+		if(cursorX != 0)
+			cursorX -= 1;
+	}
+	else if(chr == '\t') {
+		cursorX = align(cursorX, 8);
+	}
+	else if(chr == '\r') {
+		cursorX = 0;
+	}
+	else if(chr == '\n') {
+		cursorX = 0;
+		cursorY += 1;
+	}
+	else if(chr >= ' ') {
+		putChar(chr, cursorX, cursorY);
+		cursorX += 1;
+	}
+	
+	if(cursorX >= CONSOLE_WIDTH) {
+		cursorX = 0;
+		cursorY += 1;
+	}
+
+    if(cursorY >= CONSOLE_HEIGHT) {
+        cursorY -= 1;
+        scroll();
+    }
+	
+    updateCursor();
+}
+
+[S | String?(S)]
+overload print(string:S) {
+	for(c in string)
+		print(c);
 }
