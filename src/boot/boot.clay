@@ -2,9 +2,15 @@ import display;
 import multiboot.*;
 
 external kmain(multiboot:Pointer[MultibootInfo], magic:UInt32) {
-	display.clear();
-	display.println("Hello, ", "world", '!');
-	display.currentColor = display.color(display.WHITE, display.RED);
-	display.println("Blah blah blah.");
-	display.currentColor = display.DEFAULT_COLOR;
+    display.clear();
+
+    if(magic != MULTIBOOT_BOOTLOADER_MAGIC) {
+        display.println("Whoops, the bootloader didn't pass the correct magic number!");
+        return;
+    }
+
+    display.println("Hello,", ' ', "world", '!');
+    display.currentColor = display.color(display.WHITE, display.RED);
+    display.println("Blah blah blah.");
+    display.currentColor = display.DEFAULT_COLOR;
 }
