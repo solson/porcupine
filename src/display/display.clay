@@ -33,7 +33,7 @@ inline cell(ptr, row, col) = ref ptr[row * CONSOLE_WIDTH + col];
 
 color(fg:Color, bg:Color) = bitwiseOr(bitwiseAnd(Int(fg), 0xf), shiftLeft(Int(bg), 4));
 
-clear() {
+clearScreen() {
 	for(i in range(0, CONSOLE_SIZE))
 		VIDEO_MEMORY[i] = UInt16(bitwiseOr(UInt8(' '), shiftLeft(currentColor, 8)));
 }
@@ -99,7 +99,7 @@ overload print(chr:Char) {
 		putChar(chr, cursorX, cursorY);
 		cursorX += 1;
 	}
-	
+
 	if(cursorX >= CONSOLE_WIDTH) {
 		cursorX = 0;
 		cursorY += 1;
@@ -109,7 +109,7 @@ overload print(chr:Char) {
         cursorY -= 1;
         scroll();
     }
-	
+
     updateCursor();
 }
 

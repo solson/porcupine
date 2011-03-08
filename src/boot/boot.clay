@@ -2,7 +2,7 @@ import display;
 import multiboot.*;
 
 external kmain(multiboot:Pointer[MultibootInfo], magic:UInt32) {
-    display.clear();
+    display.clearScreen();
 
     if(magic != MULTIBOOT_BOOTLOADER_MAGIC) {
         display.println("Whoops, the bootloader didn't pass the correct magic number!");
