@@ -31,7 +31,7 @@ src/porcupine.o: src/porcupine.s
 	as --32 -g -o $@ src/porcupine.s
 
 src/porcupine.s: ${CLAYFILES}
-	${CLAY} -Isrc -no-exceptions -shared -target i386-pc-linux-gnu -asm -o $@ src/boot/boot.clay
+	${CLAY} -Isrc -no-exceptions -shared -Dclay.DisableAssertions -target i386-pc-linux-gnu -S -o $@ src/boot/boot.clay
 
 %.o: %.asm
 	nasm ${ASFLAGS} -o $@ $<
