@@ -1,0 +1,49 @@
+// Global Descriptor Table
+//   Refer to http://wiki.osdev.org/GDT
+
+alias GDTEntry = Array[Byte, 8];
+alias GDTDescriptor = Array[Byte, 6];
+
+var gdt = Array[GDTEntry, 3]();
+
+initGDT() {
+    zeroMemory(Pointer[Byte](begin(gdt)), Pointer[Byte](end(gdt)));
+
+    // Leave one null GDT entry at 0 because the CPU wants it there.
+    gdt[1] = makeGDTEntry(0x00000000, 0xFFFFF, 0, 1, 0, 1, 1, 1);
+    gdt[2] = makeGDTEntry(0x00000000, 0xFFFFF, 0, 0, 0, 1, 1, 1);
+
+    var gdtd = makeGDTDescriptor(begin(gdt), TypeSize(Type(gdt)) - 1);
+    loadGDT(&gdtd);
+}
+
+external loadGDT(gdtd:Pointer[GDTDescriptor]);
+
+makeGDTDescriptor(offset, size) {
+    var gdtd = GDTDescriptor();
+    Pointer[UInt16](&gdtd[0])^ = UInt16(size);
+    Pointer[UInt32](&gdtd[2])^ = UInt32(offset);
+    return move(gdtd);
+}
+
+makeGDTEntry(base, limit, privl, ex, dc, rw, gr, sz) {
+    var gdte = GDTEntry();
+    Pointer[UInt16](&gdte[2])^ = UInt16(base);           // base bits 0..15
+    Pointer[UInt8](&gdte[4])^ = UInt8(bitshr(base, 16)); // base bits 16..23
+    Pointer[UInt8](&gdte[7])^ = UInt8(bitshr(base, 24)); // base bits 24..31
+
+    Pointer[UInt16](&gdte[0])^ = UInt16(limit); // limit bits 0..15
+    Pointer[UInt8](&gdte[6])^ = UInt8(bitor(bitshl(gr, 7), // granularity bit
+                                            bitshl(sz, 6), // size bit
+                                                           // two dummy bits
+                                            bitshr(limit, 16))); // limit bits 16..19
+
+    Pointer[UInt8](&gdte[5])^ = UInt8(bitor(bitshl(1, 7),     // first bit must be 1 for all valid GDT entries
+                                            bitshl(privl, 5), // two bits for the ring level
+                                            bitshl(1, 4),     // dummy bit, must be 1
+                                            bitshl(ex, 3),    // executable bit
+                                            bitshl(dc, 2),    // Direction bit/Conforming bit
+                                            bitshl(rw, 1)));  // Readable bit/Writable bit
+                                                              // Accessed bit (left as 0)
+    return move(gdte);
+}

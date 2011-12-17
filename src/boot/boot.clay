@@ -1,16 +1,33 @@
-import display;
+import display.*;
 import multiboot.*;
+import gdt;
+
+// Hack. LLVM will generate a call to this function (clay and LLVM don't
+// know we don't have libc here.) This is used by the zeroMemory call in
+// gdt.clay.
+external memset(s:RawPointer, c:Int, n:SizeT) : RawPointer {
+    var ptr = Pointer[UInt8](s);
+    for(i in range(n))
+        (ptr + i)^ <-- UInt8(c);
+    return s;
+}
 
 external kmain(multiboot:Pointer[MultibootInfo], magic:UInt32) {
-    display.clearScreen();
+    clearScreen();
 
     if(magic != MULTIBOOT_BOOTLOADER_MAGIC) {
-        display.println("Whoops, the bootloader didn't pass the correct magic number!");
+        println("Whoops, the bootloader didn't pass the correct magic number!");
         return;
     }
 
-    display.println("Hello,", ' ', "world", '!');
-    display.currentColor = display.color(display.WHITE, display.RED);
-    display.println("Blah blah blah.");
-    display.currentColor = display.DEFAULT_COLOR;
+    println("Hello,", ' ', "world", '!');
+    currentColor = color(WHITE, RED);
+    println("About to init GDT!");
+    currentColor = DEFAULT_COLOR;
+
+    gdt.initGDT();
+
+    println("GDT initialized!");
+
+    while(true) {}
 }
