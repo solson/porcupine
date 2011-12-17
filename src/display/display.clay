@@ -1,13 +1,13 @@
 import ports;
 
 // returns `x` aligned to the next boundary of `alignment`.
-inline align(x, alignment) = bitwiseAnd(x, bitwiseNot(alignment - 1)) + alignment;
+inline align(x, alignment) = bitand(x, bitnot(alignment - 1)) + alignment;
 
-enum Color {
+enum Color (
 	BLACK, BLUE, GREEN, CYAN, RED, MAGENTA, BROWN, LIGHT_GREY, DARK_GREY,
 	LIGHT_BLUE, LIGHT_GREEN, LIGHT_CYAN, LIGHT_RED,	LIGHT_MAGENTA, YELLOW,
 	WHITE
-}
+);
 
 alias DEFAULT_COLOR = color(LIGHT_GREY, BLACK);
 var currentColor = DEFAULT_COLOR;
@@ -31,11 +31,11 @@ alias CURSOR_HIGH_PORT = UInt8(0xF);
 
 inline cell(ptr, row, col) = ref ptr[row * CONSOLE_WIDTH + col];
 
-color(fg:Color, bg:Color) = bitwiseOr(bitwiseAnd(Int(fg), 0xf), shiftLeft(Int(bg), 4));
+color(fg:Color, bg:Color) = bitor(bitand(Int(fg), 0xf), bitshl(Int(bg), 4));
 
 clearScreen() {
 	for(i in range(0, CONSOLE_SIZE))
-		VIDEO_MEMORY[i] = UInt16(bitwiseOr(UInt8(' '), shiftLeft(currentColor, 8)));
+		VIDEO_MEMORY[i] = UInt16(bitor(UInt8(' '), bitshl(currentColor, 8)));
 }
 
 scroll() {
@@ -51,10 +51,10 @@ moveCursor(x, y) {
 	var position = UInt16(y * CONSOLE_WIDTH + x);
 
 	ports.outByte(INDEX_PORT, CURSOR_LOW_PORT);
-	ports.outByte(DATA_PORT, UInt8(shiftRight(position, 8)));
+	ports.outByte(DATA_PORT, UInt8(bitshr(position, 8)));
 
 	ports.outByte(INDEX_PORT, CURSOR_HIGH_PORT);
-	ports.outByte(DATA_PORT, UInt8(bitwiseAnd(position, 0xFF)));
+	ports.outByte(DATA_PORT, UInt8(bitand(position, 0xFF)));
 }
 
 updateCursor() {
@@ -63,25 +63,25 @@ updateCursor() {
 
 putChar(chr:Char, x, y) {
 	var i = y * CONSOLE_WIDTH + x;
-	VIDEO_MEMORY[i] = UInt16(bitwiseOr(UInt8(chr), shiftLeft(currentColor, 8)));
+	VIDEO_MEMORY[i] = UInt16(bitor(UInt8(chr), bitshl(currentColor, 8)));
 }
 
-procedure print;
-procedure println;
+define print;
+define println;
 
-overload print(a, ...b) {
+overload print(a, ..b) {
     print(a);
-    print(...b);
+    print(..b);
 }
 
 overload print() {}
 
-overload println(...a) {
-    print(...a, '\n');
+overload println(..a) {
+    print(..a, '\n');
 }
 
 overload print(chr:Char) {
-	if(chr == '\b') {
+	if(chr == '\x08') { // '\b'
 		if(cursorX != 0)
 			cursorX -= 1;
 	}
