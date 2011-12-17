@@ -1,4 +1,5 @@
 CLAY := clay
+QEMU := qemu-system-i386
 
 LDFLAGS := -melf_i386 -nostdlib -g
 ASFLAGS := -felf32 -g
@@ -13,11 +14,14 @@ ASMOBJFILES := $(patsubst %.asm,%.o,$(ASMFILES))
 
 all: porcupine.iso
 
-bochs: all
-	bochs -qf .bochsrc
+bochs: porcupine.iso
+	@bochs -qf .bochsrc
 
-bochs-dbg: all
-	bochs -qf .bochsrc-dbg
+bochs-dbg: porcupine.iso
+	@bochs -qf .bochsrc-dbg
+
+qemu: porcupine.iso
+	@$(QEMU) -cdrom $< -net none
 
 porcupine.iso: porcupine.exe isofs/boot/grub/stage2_eltorito isofs/boot/grub/menu.lst
 	@mkdir -p isofs/system
