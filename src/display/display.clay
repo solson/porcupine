@@ -81,17 +81,15 @@ overload println(..a) {
 }
 
 overload print(chr:Char) {
-	if(chr == '\x08') { // '\b'
+	switch(chr)
+	case ('\x08') // '\b'
 		if(cursorX != 0)
 			cursorX -= 1;
-	}
-	else if(chr == '\t') {
+	case ('\t')
 		cursorX = align(cursorX, 8);
-	}
-	else if(chr == '\r') {
+	case ('\r')
 		cursorX = 0;
-	}
-	else if(chr == '\n') {
+	case ('\n') {
 		cursorX = 0;
 		cursorY += 1;
 	}
