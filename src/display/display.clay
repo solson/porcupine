@@ -4,9 +4,9 @@ import ports;
 inline align(x, alignment) = bitand(x, bitnot(alignment - 1)) + alignment;
 
 enum Color (
-	BLACK, BLUE, GREEN, CYAN, RED, MAGENTA, BROWN, LIGHT_GREY, DARK_GREY,
-	LIGHT_BLUE, LIGHT_GREEN, LIGHT_CYAN, LIGHT_RED,	LIGHT_MAGENTA, YELLOW,
-	WHITE
+    BLACK, BLUE, GREEN, CYAN, RED, MAGENTA, BROWN, LIGHT_GREY, DARK_GREY,
+    LIGHT_BLUE, LIGHT_GREEN, LIGHT_CYAN, LIGHT_RED, LIGHT_MAGENTA, YELLOW,
+    WHITE
 );
 
 alias DEFAULT_COLOR = color(LIGHT_GREY, BLACK);
@@ -34,36 +34,36 @@ inline cell(ptr, row, col) = ref ptr[row * CONSOLE_WIDTH + col];
 color(fg:Color, bg:Color) = bitor(bitand(Int(fg), 0xf), bitshl(Int(bg), 4));
 
 clearScreen() {
-	for(i in range(0, CONSOLE_SIZE))
-		VIDEO_MEMORY[i] = UInt16(bitor(UInt8(' '), bitshl(currentColor, 8)));
+    for(i in range(0, CONSOLE_SIZE))
+        VIDEO_MEMORY[i] = UInt16(bitor(UInt8(' '), bitshl(currentColor, 8)));
 }
 
 scroll() {
-	for(row in range(1, CONSOLE_HEIGHT))
-		for(col in range(0, CONSOLE_WIDTH))
-			cell(VIDEO_MEMORY, row - 1, col) = cell(VIDEO_MEMORY, row, col);
+    for(row in range(1, CONSOLE_HEIGHT))
+        for(col in range(0, CONSOLE_WIDTH))
+            cell(VIDEO_MEMORY, row - 1, col) = cell(VIDEO_MEMORY, row, col);
 
-	for(col in range(0, CONSOLE_WIDTH))
-		putChar(' ', col, CONSOLE_HEIGHT - 1);
+    for(col in range(0, CONSOLE_WIDTH))
+        putChar(' ', col, CONSOLE_HEIGHT - 1);
 }
 
 moveCursor(x, y) {
-	var position = UInt16(y * CONSOLE_WIDTH + x);
+    var position = UInt16(y * CONSOLE_WIDTH + x);
 
-	ports.outByte(INDEX_PORT, CURSOR_LOW_PORT);
-	ports.outByte(DATA_PORT, UInt8(bitshr(position, 8)));
+    ports.outByte(INDEX_PORT, CURSOR_LOW_PORT);
+    ports.outByte(DATA_PORT, UInt8(bitshr(position, 8)));
 
-	ports.outByte(INDEX_PORT, CURSOR_HIGH_PORT);
-	ports.outByte(DATA_PORT, UInt8(bitand(position, 0xFF)));
+    ports.outByte(INDEX_PORT, CURSOR_HIGH_PORT);
+    ports.outByte(DATA_PORT, UInt8(bitand(position, 0xFF)));
 }
 
 updateCursor() {
-	moveCursor(cursorX, cursorY);
+    moveCursor(cursorX, cursorY);
 }
 
 putChar(chr:Char, x, y) {
-	var i = y * CONSOLE_WIDTH + x;
-	VIDEO_MEMORY[i] = UInt16(bitor(UInt8(chr), bitshl(currentColor, 8)));
+    var i = y * CONSOLE_WIDTH + x;
+    VIDEO_MEMORY[i] = UInt16(bitor(UInt8(chr), bitshl(currentColor, 8)));
 }
 
 define print;
@@ -81,27 +81,27 @@ overload println(..a) {
 }
 
 overload print(chr:Char) {
-	switch(chr)
-	case ('\x08') // '\b'
-		if(cursorX != 0)
-			cursorX -= 1;
-	case ('\t')
-		cursorX = align(cursorX, 8);
-	case ('\r')
-		cursorX = 0;
-	case ('\n') {
-		cursorX = 0;
-		cursorY += 1;
-	}
-	else if(chr >= ' ') {
-		putChar(chr, cursorX, cursorY);
-		cursorX += 1;
-	}
+    switch(chr)
+    case ('\x08') // '\b'
+        if(cursorX != 0)
+            cursorX -= 1;
+    case ('\t')
+        cursorX = align(cursorX, 8);
+    case ('\r')
+        cursorX = 0;
+    case ('\n') {
+        cursorX = 0;
+        cursorY += 1;
+    }
+    else if(chr >= ' ') {
+        putChar(chr, cursorX, cursorY);
+        cursorX += 1;
+    }
 
-	if(cursorX >= CONSOLE_WIDTH) {
-		cursorX = 0;
-		cursorY += 1;
-	}
+    if(cursorX >= CONSOLE_WIDTH) {
+        cursorX = 0;
+        cursorY += 1;
+    }
 
     if(cursorY >= CONSOLE_HEIGHT) {
         cursorY -= 1;
@@ -113,6 +113,6 @@ overload print(chr:Char) {
 
 [S | String?(S)]
 overload print(string:S) {
-	for(c in string)
-		print(c);
+    for(c in string)
+        print(c);
 }
