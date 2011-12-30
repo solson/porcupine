@@ -31,11 +31,8 @@ porcupine.iso: porcupine.exe isofs/boot/grub/stage2_eltorito isofs/boot/grub/men
 porcupine.exe: ${ASMOBJFILES} src/porcupine.o
 	${LD} ${LDFLAGS} -T src/linker.ld -o $@ ${ASMOBJFILES} src/porcupine.o
 
-src/porcupine.o: src/porcupine.s
-	as --32 -g -o $@ src/porcupine.s
-
-src/porcupine.s: ${CLAYFILES}
-	${CLAY} -Isrc -no-exceptions -shared -Dclay.DisableAssertions -target i386-pc-linux-gnu -S -o $@ src/boot/boot.clay
+src/porcupine.o: ${CLAYFILES}
+	${CLAY} -Isrc -no-exceptions -Dclay.DisableAssertions -target i386-pc-linux-gnu -c -o $@ src/boot/boot.clay
 
 %.o: %.asm
 	nasm ${ASFLAGS} -o $@ $<
