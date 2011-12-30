@@ -32,7 +32,7 @@ porcupine.exe: ${ASMOBJFILES} src/porcupine.o
 	${LD} ${LDFLAGS} -T src/linker.ld -o $@ ${ASMOBJFILES} src/porcupine.o
 
 src/porcupine.o: ${CLAYFILES}
-	${CLAY} -Isrc -no-exceptions -Dclay.DisableAssertions -target i386-pc-linux-gnu -c -o $@ src/boot/boot.clay
+	${CLAY} -Isrc -no-exceptions -Dclay.DisableAssertions -target i386-pc-linux-gnu -c -o $@ src/kmain.clay
 
 %.o: %.asm
 	nasm ${ASFLAGS} -o $@ $<
@@ -42,4 +42,4 @@ isofs/boot/grub/stage2_eltorito:
 	cp ${STAGE2} $@
 
 clean:
-	 $(RM) -r $(wildcard $(ASMOBJFILES) src/porcupine.s src/porcupine.o porcupine.exe porcupine.iso isofs/system/porcupine.exe)
+	 $(RM) -r $(wildcard $(ASMOBJFILES) src/porcupine.o porcupine.exe porcupine.iso isofs/system/porcupine.exe)
